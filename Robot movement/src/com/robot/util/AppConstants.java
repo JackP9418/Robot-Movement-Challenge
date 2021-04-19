@@ -1,5 +1,10 @@
 package com.robot.util;
 
+/**
+ * Developer's Repository of constants.
+ * @author Jack
+ * @version 1.0
+ */
 public class AppConstants {
 	public class MenuItem{
 		// choices
@@ -17,5 +22,16 @@ public class AppConstants {
 	public class Message {
 		public static final String SELECT_MENU_MSG = "Enter number to select from choices from the menu above ";
 		public static final String INVALID_INPUT_ERR_MSG = "%s is not a valid choice. Please try again.";
+		public static final String INITIALISE_ROBOT_ERR = "Cannot initialise robot";
+	}
+	
+	public static class Robot{
+		public enum Direction{
+			South,
+			West,
+			North,
+			East
+		}
+		
 	}
 }
