@@ -1,0 +1,2 @@
+SampleTest 1: OUTPUT: 3, 2, EAST
+SampleTest 2: OUTPUT: 0, 0, SOUTH
