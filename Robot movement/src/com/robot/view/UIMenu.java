@@ -8,6 +8,16 @@ import java.util.Map;
 
 import com.robot.util.AppConstants;
 
+/**
+ * View class for user. Responsible for printing
+ * menu items onto the console. It also contains
+ * the list of menu item. Can be de-constructed further
+ * to have a Menu factory to build but we only interact
+ * with one type of menu for now
+ * 
+ * @author Jack
+ * @version 1.0 - created
+ */
 public class UIMenu {
 	private Map<Integer, MenuItem> menuMap;
 	private BufferedReader reader;
@@ -42,13 +52,16 @@ public class UIMenu {
 	public MenuItem getMenuItem(int choice) {
 		return this.menuMap.get(choice);
 	}
-
+	
+	public void printMessage(String message) {
+		System.out.println(message);
+	}
 	
 	public void printErrorMessage(String message) {
 		System.err.println(message);
 		System.out.println();
-	}
-	
+	}	
+
 	public void closeView() {
 		try {
 			this.reader.close();
@@ -64,7 +77,6 @@ public class UIMenu {
 		});
 	}
 
-	
 	private void buildMainMenuItems() {
 		if (this.menuMap == null)
 			this.menuMap = new HashMap<Integer, MenuItem>();
@@ -77,12 +89,10 @@ public class UIMenu {
 				new MenuItem(AppConstants.MenuItem.EXIT_APP_CHOICE, AppConstants.MenuItem.EXIT_APP_DESCRIPTION, AppConstants.MenuItem.EXIT_APP_MSG));
 	}
 
-	
 	private void printHeader() {
 		System.out.println("***** ROBOT TRACKING APP *****");
 	}
 
-	
     private boolean validateInput(String input) {
 		return (input != null && !input.isEmpty() && input.trim().length() > 0);
 	}
