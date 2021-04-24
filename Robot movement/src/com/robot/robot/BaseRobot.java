@@ -1,18 +1,26 @@
 package com.robot.robot;
 
-import com.robot.robot.processing.RobotProcessingUnit;
+import com.robot.exception.InvalidCommandException;
+import com.robot.robot.command.BaseCommand;
+import com.robot.robot.command.ReportCommand;
 
 public abstract class BaseRobot {
-	private RobotProcessingUnit processingUnit;
-	
-	public void executeCommand() {
+	public BaseCommand executeCommand(BaseCommand command) {
+		if(command == null || !isCommandSupported(command)) {
+			BaseCommand errorCommand = new ReportCommand();
+			String error = "Command is null,";
+			
+			if(command != null)
+				error = command.getOriginalInputCommand();
+				
+			errorCommand.setException(new InvalidCommandException(error));
+			return errorCommand;
+		}
 		
+		return innerExecuteCommand(command);
 	}
-	
-	
-	public void setProcessingUnit(RobotProcessingUnit unit) {
-		this.processingUnit = unit;
-	}
-	
-	public abstract Object[] getCurrentPosition();
+
+	protected abstract boolean isCommandSupported(BaseCommand command);
+
+	protected abstract BaseCommand innerExecuteCommand(BaseCommand command);
 }

@@ -1,9 +1,11 @@
 package com.robot.app;
 
-import com.robot.factory.RobotFactory;
-import com.robot.factory.impl.StandardRobotMovementFactory;
-import com.robot.robot.BaseRobot;
+import com.robot.exception.InvalidCommandException;
+import com.robot.exception.RobotExecutionException;
+import com.robot.exception.UserExitException;
+import com.robot.robot.service.RobotCommandService;
 import com.robot.util.AppConstants;
+import com.robot.util.FileUtil;
 import com.robot.util.IntUtil;
 import com.robot.view.MenuItem;
 import com.robot.view.UIMenu;
@@ -17,23 +19,19 @@ import com.robot.view.UIMenu;
  * 
  */
 public class RobotMovementApp {
-	private int col, row;
-
 	private UIMenu view;
-	private RobotFactory factory;
-	private BaseRobot robot;
+	private RobotCommandService robotService;
 
-	public RobotMovementApp(int col, int row) {
-		this.col = col;
-		this.row = row;
+	public RobotMovementApp(RobotCommandService service) {
 		this.view = new UIMenu();
+		this.robotService = service;
 	}
 
 	public void startApp() {
-		if (initialiseRobot())
+		if (robotService != null)
 			commenceUserInteracttion();
 		else {
-			System.out.println(AppConstants.Message.INITIALISE_ROBOT_ERR);
+			System.out.println(AppConstants.Message.SERVICE_ABSENT_ERR);
 		}
 	}
 
@@ -55,28 +53,69 @@ public class RobotMovementApp {
 				continue;
 			}
 
-			// tell view to print instruction first
-			view.printMessage(selectedItem.getInstructions());
-
 			userFinished = (selectedItem.getItemChoice() == AppConstants.MenuItem.EXIT_APP_CHOICE);
-			if (userFinished)
+			if (userFinished) {
+				view.printMessage(selectedItem.getInstructions());
 				continue;
+			}
 
 			handleSelectedMenuItem(selectedItem);
 		}
 	}
 
 	private void handleSelectedMenuItem(MenuItem item) {
-		try {
-			// handle robot run time here
-		} catch (RuntimeException e) {
-			view.printErrorMessage(e.getMessage());
-		}
+		boolean loopUntilExit = item.isLoopingInstruction();
+		do {
+			String command = "";
+			if (item.isRequireUserInput()) {
+				command = view.captureUserInput(item.getInstructions());
+			}
+			if (command.trim().toUpperCase().equalsIgnoreCase(AppConstants.FixedUserInput.EXIT_INPUT)) {
+				loopUntilExit = false;
+				continue;
+			}
+
+			switch (item.getItemChoice()) {
+			case AppConstants.MenuItem.INSTRUCTION_CHOICE:
+				loopUntilExit = sendRobotCommand(command) && loopUntilExit;
+				break;
+			case AppConstants.MenuItem.UPLOAD_CHOICE:
+				String[] instructions = FileUtil.readFileContent(command, "TXT");
+				if (instructions != null)
+					performBulkInstructions(instructions);
+				else
+					view.printErrorMessage(AppConstants.Message.INVALID_FILE_ERR);
+				break;
+			case AppConstants.MenuItem.CLEAR_STATE_CHOICE:
+				loopUntilExit = sendRobotCommand(AppConstants.FixedUserInput.CLEAR_STATE_INPUT) && loopUntilExit;
+				break;
+			}
+		} while (loopUntilExit);
 	}
 
-	private boolean initialiseRobot() {
-		this.factory = new StandardRobotMovementFactory();
-		this.robot = factory.buildRobot(new Object[]{this.col, this.row});
-		return this.robot != null;
+	private boolean sendRobotCommand(String command) {
+		boolean shouldLoop = true;
+		try {
+			String message = this.robotService.executeCommand(command);
+			if (message != null && !message.isEmpty() && message.trim().length() > 0)
+				view.printMessage(message);
+		} catch (RuntimeException e) {
+			if (e instanceof UserExitException) {
+				shouldLoop = false;
+			} else if (e instanceof RobotExecutionException) {
+				view.printErrorMessage(e.getMessage());
+			} else if (e instanceof InvalidCommandException) {
+				view.printErrorMessage(e.getMessage());
+			} else {
+				shouldLoop = false;
+				view.printErrorMessage(e.getMessage());
+			}
+		}
+		return shouldLoop;
+	}
+
+	public void performBulkInstructions(String[] instructions) {
+		for (String instruction : instructions)
+			sendRobotCommand(instruction);
 	}
 }

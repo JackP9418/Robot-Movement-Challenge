@@ -9,11 +9,9 @@ import java.util.Map;
 import com.robot.util.AppConstants;
 
 /**
- * View class for user. Responsible for printing
- * menu items onto the console. It also contains
- * the list of menu item. Can be de-constructed further
- * to have a Menu factory to build but we only interact
- * with one type of menu for now
+ * View class for user. Responsible for printing menu items onto the console. It
+ * also contains the list of menu item. Can be de-constructed further to have a
+ * Menu factory to build but we only interact with one type of menu for now
  * 
  * @author Jack
  * @version 1.0 - created
@@ -48,19 +46,18 @@ public class UIMenu {
 		return input;
 	}
 
-	
 	public MenuItem getMenuItem(int choice) {
 		return this.menuMap.get(choice);
 	}
-	
+
 	public void printMessage(String message) {
 		System.out.println(message);
 	}
-	
+
 	public void printErrorMessage(String message) {
 		System.err.println(message);
 		System.out.println();
-	}	
+	}
 
 	public void closeView() {
 		try {
@@ -70,7 +67,7 @@ public class UIMenu {
 			// do nothing
 		}
 	}
-	
+
 	private void printMenuItems() {
 		menuMap.values().forEach(item -> {
 			System.out.println(item.getItemDescription());
@@ -82,18 +79,36 @@ public class UIMenu {
 			this.menuMap = new HashMap<Integer, MenuItem>();
 
 		this.menuMap.clear();
-
-		menuMap.put(AppConstants.MenuItem.INSTRUCTION_CHOICE,
-				new MenuItem(AppConstants.MenuItem.INSTRUCTION_CHOICE, AppConstants.MenuItem.INSTRUCTION_DESCRIPTION, AppConstants.MenuItem.INSTRUCTION_MSG));
-		menuMap.put(AppConstants.MenuItem.EXIT_APP_CHOICE,
-				new MenuItem(AppConstants.MenuItem.EXIT_APP_CHOICE, AppConstants.MenuItem.EXIT_APP_DESCRIPTION, AppConstants.MenuItem.EXIT_APP_MSG));
+		
+		// command
+		MenuItem item = new MenuItem(AppConstants.MenuItem.INSTRUCTION_CHOICE,
+				AppConstants.MenuItem.INSTRUCTION_DESCRIPTION, AppConstants.MenuItem.INSTRUCTION_MSG);
+		item.setLoopingInstruction(true);
+		item.setRequireUserInput(true);
+		menuMap.put(item.getItemChoice(), item);
+		
+		// import
+		item = new MenuItem(AppConstants.MenuItem.UPLOAD_CHOICE,
+				AppConstants.MenuItem.UPLOAD_CHOICE_DESCRIPTION, AppConstants.MenuItem.UPLOAD_CHOICE_MSG);
+		item.setRequireUserInput(true);
+		menuMap.put(item.getItemChoice(), item);
+		
+		// clear 
+		item = new MenuItem(AppConstants.MenuItem.CLEAR_STATE_CHOICE,
+				AppConstants.MenuItem.CLEAR_STATE_DESCRIPTION, "");
+		menuMap.put(item.getItemChoice(), item);
+		
+		// quit
+		item = new MenuItem(AppConstants.MenuItem.EXIT_APP_CHOICE, AppConstants.MenuItem.EXIT_APP_DESCRIPTION,
+				AppConstants.MenuItem.EXIT_APP_MSG);
+		menuMap.put(item.getItemChoice(), item);
 	}
 
 	private void printHeader() {
 		System.out.println("***** ROBOT TRACKING APP *****");
 	}
 
-    private boolean validateInput(String input) {
+	private boolean validateInput(String input) {
 		return (input != null && !input.isEmpty() && input.trim().length() > 0);
 	}
 }
